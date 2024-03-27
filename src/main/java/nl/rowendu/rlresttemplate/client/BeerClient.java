@@ -12,4 +12,6 @@ public interface BeerClient {
     Page<BeerDTO> listBeers();
 
     BeerDTO getBeerById(UUID beerId);
+
+    BeerDTO createBeer(BeerDTO newBeer);
 }
