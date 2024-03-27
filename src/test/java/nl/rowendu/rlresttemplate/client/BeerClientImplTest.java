@@ -1,16 +1,29 @@
 package nl.rowendu.rlresttemplate.client;
 
+import nl.rowendu.rlresttemplate.model.BeerDTO;
 import nl.rowendu.rlresttemplate.model.BeerParameters;
 import nl.rowendu.rlresttemplate.model.BeerStyle;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 class BeerClientImplTest {
 
   @Autowired
   BeerClientImpl beerClient;
+
+  @Test
+  void getBeerById() {
+    Page<BeerDTO> beerDTOPage = beerClient.listBeers();
+    BeerDTO beerDTO = beerDTOPage.getContent().get(0);
+    BeerDTO beerById = beerClient.getBeerById(beerDTO.getId());
+
+    assertNotNull(beerById);
+  }
 
   @Test
   void listBeersNoBeerName() {
