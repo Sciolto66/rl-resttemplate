@@ -2,8 +2,7 @@ package nl.rowendu.rlresttemplate.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -70,7 +69,7 @@ class BeerClientMockTest {
 
     server
         .expect(method(HttpMethod.GET))
-        .andExpect(requestTo(URL + BeerClientImpl.GET_BEER_PATH + "/" + expectedBeer.getId()))
+            .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, expectedBeer.getId()))
         .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
     BeerDTO actualBeer = beerClient.getBeerById(expectedBeer.getId());
