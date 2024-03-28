@@ -9,7 +9,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import nl.rowendu.rlresttemplate.config.RestTemplateBuilderConfig;
 import nl.rowendu.rlresttemplate.model.BeerDTO;
@@ -63,8 +63,22 @@ class BeerClientMockTest {
     assertThat(beerDTOS.getContent()).isNotEmpty();
   }
 
-  BeerDTOPageImpl getPage() {
-    return new BeerDTOPageImpl(Arrays.asList(getBeerDto()), 1, 25, 1);
+  @Test
+  void testGetBeerById() throws JsonProcessingException {
+    BeerDTO expectedBeer = getBeerDto();
+    String payload = objectMapper.writeValueAsString(expectedBeer);
+
+    server
+        .expect(method(HttpMethod.GET))
+        .andExpect(requestTo(URL + BeerClientImpl.GET_BEER_PATH + "/" + expectedBeer.getId()))
+        .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
+
+    BeerDTO actualBeer = beerClient.getBeerById(expectedBeer.getId());
+    assertThat(actualBeer.getId()).isEqualTo(expectedBeer.getId());
+  }
+
+  BeerDTOPageImpl<BeerDTO> getPage() {
+    return new BeerDTOPageImpl<>(Collections.singletonList(getBeerDto()), 1, 25, 1);
   }
 
   BeerDTO getBeerDto() {
