@@ -23,8 +23,8 @@ import java.util.UUID;
 public class BeerClientImpl implements BeerClient {
 
   private static final Logger log = LoggerFactory.getLogger(BeerClientImpl.class);
-  private static final String GET_BEER_PATH = "/api/v1/beer";
-  private static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
+  public static final String GET_BEER_PATH = "/api/v1/beer";
+  public static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
 
   private final RestTemplateBuilder restTemplateBuilder;
 
