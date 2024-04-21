@@ -1,11 +1,15 @@
 package nl.rowendu.rlresttemplate.client;
 
+import java.net.URI;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import nl.rowendu.rlresttemplate.model.BeerDTO;
 import nl.rowendu.rlresttemplate.model.BeerDTOPageImpl;
 import nl.rowendu.rlresttemplate.model.BeerParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -13,11 +17,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -26,7 +27,11 @@ public class BeerClientImpl implements BeerClient {
   public static final String GET_BEER_PATH = "/api/v1/beer";
   public static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
   private static final Logger log = LoggerFactory.getLogger(BeerClientImpl.class);
+
   private final RestTemplateBuilder restTemplateBuilder;
+  
+  @Setter
+  @Value("${rest.template.rootUrl}") private String baseUrl;
 
   @Override
   public void deleteBeer(UUID beerId) {
@@ -62,7 +67,8 @@ public class BeerClientImpl implements BeerClient {
   public Page<BeerDTO> listBeers(BeerParameters parameters) {
     RestTemplate restTemplate = restTemplateBuilder.build();
 
-    UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath(GET_BEER_PATH);
+    UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder
+            .fromHttpUrl(baseUrl).path(GET_BEER_PATH);
 
     if (parameters.getBeerName() != null) {
       uriComponentsBuilder.queryParam("beerName", parameters.getBeerName());
@@ -80,14 +86,13 @@ public class BeerClientImpl implements BeerClient {
       uriComponentsBuilder.queryParam("pageSize", parameters.getPageSize());
     }
 
-    String encodedUrl = uriComponentsBuilder.toUriString();
-    String decodedUrl = java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
-    log.info("Sending request to: {}", encodedUrl);
+    UriComponents uriComponents = uriComponentsBuilder.build();
+    URI uri = uriComponents.toUri();
 
     try {
       ResponseEntity<BeerDTOPageImpl<BeerDTO>> response =
               restTemplate.exchange(
-                      decodedUrl,
+                      uri,
                       HttpMethod.GET,
                       null,
                       new ParameterizedTypeReference<>() {});

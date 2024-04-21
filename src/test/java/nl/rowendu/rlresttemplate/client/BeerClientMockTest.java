@@ -59,6 +59,7 @@ class BeerClientMockTest {
     server = MockRestServiceServer.bindTo(restTemplate).build();
     when(mockRestTemplateBuilder.build()).thenReturn(restTemplate);
     beerClient = new BeerClientImpl(mockRestTemplateBuilder);
+    ((BeerClientImpl) beerClient).setBaseUrl(URL);
     expectedBeer = getBeerDto();
     beerPayload = objectMapper.writeValueAsString(expectedBeer);
   }
