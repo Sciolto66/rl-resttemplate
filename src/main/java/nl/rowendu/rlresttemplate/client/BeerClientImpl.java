@@ -16,16 +16,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class BeerClientImpl implements BeerClient {
 
-  private static final Logger log = LoggerFactory.getLogger(BeerClientImpl.class);
   public static final String GET_BEER_PATH = "/api/v1/beer";
   public static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
-
+  private static final Logger log = LoggerFactory.getLogger(BeerClientImpl.class);
   private final RestTemplateBuilder restTemplateBuilder;
 
   @Override
@@ -46,6 +46,9 @@ public class BeerClientImpl implements BeerClient {
   public BeerDTO createBeer(BeerDTO newBeer) {
     RestTemplate restTemplate = restTemplateBuilder.build();
     URI uri = restTemplate.postForLocation(GET_BEER_PATH, newBeer);
+    if (uri == null) {
+      throw new MissingLocationException("Failed to create beer, no location returned");
+    }
     return restTemplate.getForObject(uri.getPath(), BeerDTO.class);
   }
 
@@ -64,7 +67,6 @@ public class BeerClientImpl implements BeerClient {
     if (parameters.getBeerName() != null) {
       uriComponentsBuilder.queryParam("beerName", parameters.getBeerName());
     }
-
     if (parameters.getBeerStyle() != null) {
       uriComponentsBuilder.queryParam("beerStyle", parameters.getBeerStyle());
     }
@@ -77,14 +79,15 @@ public class BeerClientImpl implements BeerClient {
     if (parameters.getPageSize() > 0) {
       uriComponentsBuilder.queryParam("pageSize", parameters.getPageSize());
     }
-    String url = uriComponentsBuilder.toUriString();
 
-    log.info("Sending request to: {}", url);
+    String encodedUrl = uriComponentsBuilder.toUriString();
+    String decodedUrl = java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
+    log.info("Sending request to: {}", encodedUrl);
 
     try {
       ResponseEntity<BeerDTOPageImpl<BeerDTO>> response =
               restTemplate.exchange(
-                      url,
+                      decodedUrl,
                       HttpMethod.GET,
                       null,
                       new ParameterizedTypeReference<>() {});

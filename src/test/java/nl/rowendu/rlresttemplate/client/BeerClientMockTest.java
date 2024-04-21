@@ -10,11 +10,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.UUID;
 import nl.rowendu.rlresttemplate.config.RestTemplateBuilderConfig;
 import nl.rowendu.rlresttemplate.model.BeerDTO;
 import nl.rowendu.rlresttemplate.model.BeerDTOPageImpl;
+import nl.rowendu.rlresttemplate.model.BeerParameters;
 import nl.rowendu.rlresttemplate.model.BeerStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 @RestClientTest
 @Import(RestTemplateBuilderConfig.class)
@@ -58,6 +61,30 @@ class BeerClientMockTest {
     beerClient = new BeerClientImpl(mockRestTemplateBuilder);
     expectedBeer = getBeerDto();
     beerPayload = objectMapper.writeValueAsString(expectedBeer);
+  }
+
+  @Test
+  void testListBeersWithQueryParam() throws JsonProcessingException {
+    String beerPayload = objectMapper.writeValueAsString(getPage());
+    String beerName = "Mango Bobs";
+    String encodedBeerName = UriUtils.encode(beerName, StandardCharsets.UTF_8);
+
+    URI uri = UriComponentsBuilder.fromHttpUrl(URL + BeerClientImpl.GET_BEER_PATH)
+            .queryParam("beerName", beerName)
+            .build().encode().toUri();
+
+    server.expect(method(HttpMethod.GET))
+            .andExpect(requestTo(uri))
+            .andExpect(queryParam("beerName", encodedBeerName))
+            .andRespond(withSuccess(beerPayload, MediaType.APPLICATION_JSON));
+
+    BeerParameters parameters = new BeerParameters();
+    parameters.setBeerName(beerName);
+
+    Page<BeerDTO> responsePage = beerClient.listBeers(parameters);
+    assertThat(responsePage.getContent()).hasSize(1);
+    assertThat(responsePage.getContent().get(0).getBeerName()).isEqualTo(beerName);
+
   }
 
   @Test
