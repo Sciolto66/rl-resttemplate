@@ -64,7 +64,7 @@ class BeerClientImplTest {
             .price(new BigDecimal("12.99"))
             .beerName("Mango bobs")
             .beerStyle(BeerStyle.IPA)
-            .quantityOnHand(200)
+            .quantityOnHand(Integer.valueOf(200))
             .upc("123456789")
             .build();
 
