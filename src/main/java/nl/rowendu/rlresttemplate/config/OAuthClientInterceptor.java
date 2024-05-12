@@ -1,5 +1,6 @@
 package nl.rowendu.rlresttemplate.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -26,7 +27,7 @@ public class OAuthClientInterceptor implements ClientHttpRequestInterceptor {
     private final Authentication principal;
     private final ClientRegistration clientRegistration;
 
-    public OAuthClientInterceptor(OAuth2AuthorizedClientManager manager, ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuthClientInterceptor(@Qualifier("auth2AuthorizedClientManager") OAuth2AuthorizedClientManager manager, ClientRegistrationRepository clientRegistrationRepository) {
         this.manager = manager;
         this.principal = createPrincipal();
         this.clientRegistration = clientRegistrationRepository.findByRegistrationId("springauth");
